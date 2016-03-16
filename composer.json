@@ -4,6 +4,10 @@
     "type": "yii2-extension",
     "keywords": ["yii2","extension","ivr","digitaldirect"],
     "license": "BSD-3-Clause",
+    "support": {
+        "issues": "https://github.com/ignatenkovnikita/yii2-digitaldirect-ivr/issues",
+        "source": "https://github.com/ignatenkovnikita/yii2-digitaldirect-ivr"
+    },
     "authors": [
         {
             "name": "Ignatenkov Nikita",
