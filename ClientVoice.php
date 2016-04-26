@@ -27,21 +27,8 @@ class ClientVoice extends Component
     /** @var  Client $_client */
     private $_client;
 
-    /**
-     * Return array errors for one is method
-     * @return array
-     */
-    protected function errorsForStatusMessage()
-    {
-        return [
-            1 => 'Внутренняя ошибка',
-            100 => 'Не все поля (параметры) были указаны',
-            200 => 'Неверный логин/пароль, либо пользователь не является «особенным» - необходим Статус «привилегированного пользователя»',
-            300 => 'MID <= 0 (идентификатор указан некорректно)',
-            400 => 'Сообщение с указанным ID не найдено или сообщение находится в обработке (т.е. состояние рассылки, в которую входят номера телефонов, имеет одно из состояний: «постановка в очередь», «подтверждена (ожидает начала)» или «завершается»)',
-            2100 => 'Для пользователя не включен функционал голосовых рассылок'
-        ];
-    }
+
+
 
     public function init()
     {
@@ -79,7 +66,11 @@ class ClientVoice extends Component
     {
         /** @var Response $response */
         $response = $this->_send('submit_acmessage', $params, 'post');
-        return $response->isOk ? $response->content : $this->getError('errorsForSendMessage', $response->content);
+        return [
+            'status' => $response->isOk,
+            'response' => $response->content,
+            'message' => $this->getError('errorsForSendMessage', $response->content)
+        ];
     }
 
     public function sendMessages()
@@ -111,7 +102,11 @@ class ClientVoice extends Component
     {
         /** @var Response $response */
         $response = $this->_send('status_acmessage', ['mid' => $mid], 'post');
-        return $response->isOk ? $response->content : $this->getError('errorsForStatusMessage', $response->content);
+        return [
+            'status' => $response->isOk,
+            'response' => $response->content,
+            'message' => $this->getError('errorsForStatusOneMessage', $response->content)
+        ];
     }
 
     public function statusMessages()
@@ -129,6 +124,62 @@ class ClientVoice extends Component
     {
         $errors = call_user_func('self::' . $name);
         return ArrayHelper::getValue($errors, $code);
+    }
+
+    protected function errorsForSendMessage()
+    {
+        return [
+            1 => 'Внутренняя ошибка',
+            100 => 'Не все поля (параметры) были указаны',
+            200 => 'Неверный логин/пароль, либо пользователь не является «особенным» - необходим Статус «привилегированного пользователя»',
+            210 => 'Запрос с неразрешенного IP',
+            300 => 'Некорректно введен адрес назначения (длина MSISDN меньше 10 символов или более 12 символов)',
+            400 => 'Некорректно введен исходный адрес (параметр «from»)',
+            500 => 'TTS текст сообщения не в utf-8;',
+            600 => 'tts_text или file_id не были указаны, либо были указаны одновременно',
+            700 => 'Проблемы с тарификацией сообщений (не достаточно денег, необходимо проверить баланс и соотв. тарифный план)',
+            800 => 'Некорректно указан адрес назначения (возможная причина - регион получателя не идентифицирован)',
+            900 => 'Отправить сообщение невозможно (Абонент находится в «черном» списке)',
+            1000 => 'Неверный формат даты startdate',
+            1100 => 'Найдены стоп слова',
+            2100 => 'Отсутствуют права на создание IVR сообщения',
+            2200 => 'Указанный file_id не найден или некорректен.',
+            2300 => 'Autocall_successfull_call_le ngth меньше 1, или больше 600',
+            2500 => 'Указаны menu_button, но не указан tts_menu или file_menu',
+            2600 => 'Команда для menu_button содержит символы [a-zA-Z], но не является "term" или "repeat"',
+            2700 => 'Команда для menu_button содержит только цифры, но не является валидным номером телефона',
+            2800 => 'Значение параметра tts_menu задано в кодировке, отличной от UTF-8',
+            2900 => 'Файл с указанным id для file_menu не найден',
+            3000 => 'Запрещена опция перевода звонка на оператора',
+            3100 => 'При указанном tts_menu или file_menu отсутствует хотя бы один menu_button',
+            3200 => 'Значение autocall_max_attempts указано вне диапазона [1…12]'
+        ];
+    }
+
+    /**
+     * Return array errors for one is method
+     * @return array
+     */
+    protected function errorsForStatusOneMessage()
+    {
+        return [
+            1 => 'Внутренняя ошибка',
+            100 => 'Не все поля (параметры) были указаны',
+            200 => 'Неверный логин/пароль, либо пользователь не является «особенным» - необходим Статус «привилегированного пользователя»',
+            300 => 'MID <= 0 (идентификатор указан некорректно)',
+            400 => 'Сообщение с указанным ID не найдено или сообщение находится в обработке (т.е. состояние рассылки, в которую входят номера телефонов, имеет одно из состояний: «постановка в очередь», «подтверждена (ожидает начала)» или «завершается»)',
+            2100 => 'Для пользователя не включен функционал голосовых рассылок'
+        ];
+    }
+
+    protected function successForStatusMessage()
+    {
+        return [
+            0 => 'Успешный звонок (абонент дослушал до successful_call_length)',
+            1 => 'Не доставлено (не дозвонились + ошибки от шлюза: неверный номер отправителя, неверный номер адресата)',
+            2 => 'Статус сообщения неизвестен (статистика от шлюза отсутствует)',
+            3 => 'Звонок доставлен (произошел факт снятия трубки абонентом)',
+        ];
     }
 
 }

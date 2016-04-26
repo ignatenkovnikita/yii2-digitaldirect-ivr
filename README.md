@@ -23,11 +23,24 @@ or add
 
 to the require section of your `composer.json` file.
 
-
 Usage
 -----
 
-Once the extension is installed, simply use it in your code by  :
+Add this to your main configuration's components array:
 
 ```php
-<?= \ignatenkovnikita\digitaldirectivr\AutoloadExample::widget(); ?>```
+'ivr' => [
+            'class' => \ignatenkovnikita\digitaldirectivr\ClientVoice::className() ,
+            'url' => 'https://api.digital-direct.ru',
+            'login' => 'your_login',
+            'pass' => 'your_password'
+        ],
+```
+Typical component usage
+-----------------------
+```php
+Yii::$app->ivr->statusOneMessage(id);
+Yii::$app->ivr->sendMessage(params);
+```
+
+
